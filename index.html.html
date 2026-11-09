@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#176b55">
+<title>アイス＆ドリンク販売</title>
+<style>
+:root{--green:#176b55;--green2:#e8f4ef;--ink:#18231f;--muted:#68756f;--line:#e4eae6;--bg:#f5f8f6;--white:#fff;--orange:#f3a642;--red:#bd4545}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+header{background:var(--green);color:white;padding:18px 16px 16px;position:sticky;top:0;z-index:5}header .sub{font-size:12px;opacity:.85}header h1{font-size:20px;margin:3px 0 0}
+main{max-width:760px;margin:auto;padding:16px}.tab{display:none}.tab.active{display:block}.section-title{font-size:16px;font-weight:800;margin:8px 0 10px}.hint{font-size:12px;color:var(--muted);line-height:1.6}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.choice{border:1.5px solid var(--line);background:white;border-radius:14px;padding:15px 10px;min-height:64px;font-size:15px;font-weight:750;color:var(--ink);touch-action:manipulation}.choice.selected{border:2px solid var(--green);background:var(--green2);color:var(--green)}button{font:inherit;cursor:pointer}.choice:active,.primary:active{transform:scale(.985)}
+.card{background:white;border:1px solid var(--line);border-radius:16px;padding:14px;margin:12px 0}.row{display:flex;align-items:center;justify-content:space-between;gap:10px}.label{font-size:12px;color:var(--muted);font-weight:700;margin-bottom:8px}.qty{display:flex;align-items:center;gap:16px}.qty button{width:38px;height:38px;border-radius:12px;border:1px solid var(--line);background:white;font-size:22px}.qty strong{font-size:20px;min-width:22px;text-align:center}
+.primary{width:100%;border:0;border-radius:14px;background:var(--green);color:white;font-weight:800;padding:16px;margin-top:12px;font-size:16px}.secondary{border:1px solid var(--line);border-radius:11px;background:white;padding:10px 12px;font-weight:700;color:var(--ink)}.danger{color:var(--red);border-color:#efd5d5}
+.total{background:var(--green2);border-radius:14px;padding:14px;margin-top:12px}.total .amount{font-size:28px;font-weight:900;color:var(--green)}
+.cart-item{padding:12px 0;border-bottom:1px solid var(--line)}.cart-item:last-child{border-bottom:0}.pill{font-size:11px;background:#f0f3f1;border-radius:30px;padding:4px 8px;color:#52615a}
+.statgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}.stat{background:white;border:1px solid var(--line);border-radius:14px;padding:13px}.stat small{color:var(--muted);font-weight:700}.stat strong{display:block;font-size:23px;margin-top:5px}
+nav{position:fixed;bottom:0;left:0;right:0;background:#ffffffef;backdrop-filter:blur(12px);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);padding:8px 6px calc(8px + env(safe-area-inset-bottom));z-index:10}nav button{border:0;background:none;color:#718078;font-size:11px;font-weight:700;padding:5px 2px}nav button b{display:block;font-size:20px;margin-bottom:2px}nav button.active{color:var(--green)}
+.listrow{padding:11px 0;border-bottom:1px solid var(--line)}.listrow:last-child{border:0}.empty{text-align:center;color:var(--muted);padding:24px 8px;font-size:13px}
+input[type=date]{font:inherit;border:1px solid var(--line);border-radius:10px;padding:10px;background:white}
+.notice{background:#fff8e9;border:1px solid #f2dfb7;color:#75551d;border-radius:12px;padding:11px;font-size:12px;line-height:1.6;margin:12px 0}
+.filebtn{display:inline-block;border:1px solid var(--line);background:white;border-radius:11px;padding:11px 13px;font-weight:700;font-size:13px}
+@media(min-width:600px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+</style>
+</head>
+<body>
+<header><div class="sub">販売管理・端末内保存</div><h1>🍹 アイス＆ドリンク販売</h1></header>
+<main>
+<section id="sale" class="tab active">
+  <div class="section-title">① 飲み物を選ぶ</div>
+  <div id="drinks" class="grid"></div>
+  <div class="section-title" style="margin-top:20px">② アイスを選ぶ</div>
+  <div id="ices" class="grid"></div>
+  <div class="card">
+    <div class="row"><div><div class="label">③ この組み合わせのセット数</div><div class="hint">飲み物1つ＋アイス1つで1セット</div></div>
+      <div class="qty"><button id="minus" aria-label="減らす">−</button><strong id="qty">1</strong><button id="plus" aria-label="増やす">＋</button></div>
+    </div>
+    <button id="add" class="primary">組み合わせをカートに追加</button>
+  </div>
+  <div class="card">
+    <div class="row"><div class="section-title" style="margin:0">今回のお会計</div><span class="pill" id="cartCount">0セット</span></div>
+    <div id="cart"><div class="empty">組み合わせを選んで追加してください</div></div>
+    <div class="total"><div class="row"><span>合計金額</span><span class="amount" id="cartTotal">0円</span></div><div class="hint">1セット 250円</div></div>
+    <button id="checkout" class="primary" disabled>販売を確定して記録する</button>
+    <div class="hint" style="text-align:center;margin-top:8px">確定すると売上履歴に保存されます。</div>
+  </div>
+</section>
+<section id="dashboard" class="tab">
+  <div class="row"><div class="section-title">売上サマリー</div><input type="date" id="dashDate"></div>
+  <div class="statgrid">
+    <div class="stat"><small>売上金額</small><strong id="daySales">0円</strong></div>
+    <div class="stat"><small>販売セット数</small><strong id="daySets">0</strong></div>
+    <div class="stat"><small>会計回数</small><strong id="dayOrders">0</strong></div>
+    <div class="stat"><small>平均会計額</small><strong id="dayAverage">0円</strong></div>
+  </div>
+  <div class="card"><div class="section-title">飲み物別 販売数</div><div id="drinkTotals"></div></div>
+  <div class="card"><div class="section-title">アイス別 販売数</div><div id="iceTotals"></div></div>
+  <div class="card"><div class="section-title">組み合わせ別 販売数</div><div id="comboTotals"></div></div>
+</section>
+<section id="history" class="tab">
+  <div class="row"><div class="section-title">販売履歴</div><input type="date" id="historyDate"></div>
+  <div class="hint">選択した日付の会計記録を表示します。</div>
+  <div class="card" id="historyList"></div>
+</section>
+<section id="backup" class="tab">
+  <div class="section-title">データのバックアップ</div>
+  <div class="notice">売上データはこのiPadのブラウザ内に保存されます。Safariの履歴・Webサイトデータを消去したり、端末を交換・故障したりすると消える可能性があります。定期的にバックアップしてください。</div>
+  <div class="card">
+    <div class="section-title">バックアップを書き出す</div>
+    <p class="hint">売上記録をJSONファイルとして保存します。ファイルアプリやiCloud Driveなどに保管してください。</p>
+    <button class="primary" id="export">バックアップを保存</button>
+  </div>
+  <div class="card">
+    <div class="section-title">バックアップを復元する</div>
+    <p class="hint">以前に書き出したJSONファイルを読み込みます。現在の記録に追加ではなく、置き換えます。</p>
+    <label class="filebtn">バックアップファイルを選択<input type="file" id="import" accept=".json,application/json" hidden></label>
+  </div>
+  <div class="card">
+    <div class="section-title">データ管理</div>
+    <p class="hint">テスト販売の記録をすべて消す場合に使います。取り消せないので注意してください。</p>
+    <button class="secondary danger" id="clear">すべての販売記録を削除</button>
+  </div>
+  <div class="hint">アプリ名：アイス＆ドリンク販売管理 ／ 価格：1セット250円</div>
+</section>
+</main>
+<nav>
+<button class="active" data-tab="sale"><b>🛒</b>販売</button>
+<button data-tab="dashboard"><b>📊</b>売上</button>
+<button data-tab="history"><b>🧾</b>履歴</button>
+<button data-tab="backup"><b>💾</b>保存・設定</button>
+</nav>
+<script>
+(()=>{
+const DRINKS=["サイダー","カルピスソーダ","ジンジャーエール"];
+const ICES=["ソーダ","カルピス","みかん","ラムネソーダ","ラムネブドウ"];
+const PRICE=250, KEY="iceDrinkSales_v1";
+let sales=[];let selectedDrink=DRINKS[0],selectedIce=ICES[0],qty=1,cart=[];
+const $=id=>document.getElementById(id);
+const today=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`};
+const yen=n=>`${Number(n).toLocaleString("ja-JP")}円`;
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function load(){try{const x=JSON.parse(localStorage.getItem(KEY)||"[]");sales=Array.isArray(x)?x:[]}catch(e){sales=[]}}
+function save(){localStorage.setItem(KEY,JSON.stringify(sales))}
+function renderChoices(){
+ $("drinks").innerHTML=DRINKS.map(x=>`<button class="choice ${x===selectedDrink?"selected":""}" data-drink="${esc(x)}">${esc(x)}</button>`).join("");
+ $("ices").innerHTML=ICES.map(x=>`<button class="choice ${x===selectedIce?"selected":""}" data-ice="${esc(x)}">${esc(x)}</button>`).join("");
+ document.querySelectorAll("[data-drink]").forEach(b=>b.onclick=()=>{selectedDrink=b.dataset.drink;renderChoices()});
+ document.querySelectorAll("[data-ice]").forEach(b=>b.onclick=()=>{selectedIce=b.dataset.ice;renderChoices()});
+}
+function renderCart(){
+ const sets=cart.reduce((a,x)=>a+x.qty,0),total=sets*PRICE;
+ $("cartCount").textContent=sets+"セット";$("cartTotal").textContent=yen(total);$("checkout").disabled=sets===0;
+ $("cart").innerHTML=cart.length?cart.map((x,i)=>`<div class="cart-item"><div class="row"><div><b>${esc(x.drink)} × ${esc(x.ice)}</b><div class="hint">${yen(PRICE)} × ${x.qty}セット</div></div><div class="row"><b>${yen(x.qty*PRICE)}</b><button class="secondary danger" data-remove="${i}">削除</button></div></div></div>`).join(""):'<div class="empty">組み合わせを選んで追加してください</div>';
+ document.querySelectorAll("[data-remove]").forEach(b=>b.onclick=()=>{cart.splice(Number(b.dataset.remove),1);renderCart()});
+}
+function daySales(date){return sales.filter(s=>s.date===date)}
+function aggregate(items,key,names){return names.map(name=>({name,count:items.reduce((sum,s)=>sum+s.items.reduce((a,x)=>a+(x[key]===name?x.qty:0),0),0)}))}
+function renderDashboard(){
+ const date=$("dashDate").value||today(),items=daySales(date),sets=items.reduce((a,s)=>a+s.items.reduce((b,x)=>b+x.qty,0),0),amount=sets*PRICE;
+ $("daySales").textContent=yen(amount);$("daySets").textContent=sets+"セット";$("dayOrders").textContent=items.length+"回";$("dayAverage").textContent=yen(items.length?Math.round(amount/items.length):0);
+ const draw=(id,rows)=>$(id).innerHTML=rows.map(x=>`<div class="listrow row"><span>${esc(x.name)}</span><b>${x.count}セット</b></div>`).join("");
+ draw("drinkTotals",aggregate(items,"drink",DRINKS));draw("iceTotals",aggregate(items,"ice",ICES));
+ const combos={};items.forEach(s=>s.items.forEach(x=>{const k=x.drink+" × "+x.ice;combos[k]=(combos[k]||0)+x.qty}));
+ const arr=Object.entries(combos).sort((a,b)=>b[1]-a[1]);
+ $("comboTotals").innerHTML=arr.length?arr.map(([k,v])=>`<div class="listrow row"><span>${esc(k)}</span><b>${v}セット</b></div>`).join(""):'<div class="empty">この日の販売記録はありません</div>';
+}
+function renderHistory(){
+ const date=$("historyDate").value||today(),items=daySales(date).slice().reverse();
+ $("historyList").innerHTML=items.length?items.map(s=>`<div class="listrow"><div class="row"><b>${new Date(s.time).toLocaleTimeString("ja-JP",{hour:"2-digit",minute:"2-digit"})} の会計</b><b>${yen(s.items.reduce((a,x)=>a+x.qty,0)*PRICE)}</b></div>${s.items.map(x=>`<div class="hint">${esc(x.drink)} × ${esc(x.ice)}　${x.qty}セット</div>`).join("")}<div style="text-align:right;margin-top:7px"><button class="secondary danger" data-del="${esc(s.id)}">この会計を削除</button></div></div>`).join(""):'<div class="empty">この日の販売記録はありません</div>';
+ document.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{if(confirm("この会計記録を削除しますか？")){sales=sales.filter(s=>s.id!==b.dataset.del);save();renderHistory();renderDashboard()}});
+}
+function showTab(name){document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("active",x.id===name));document.querySelectorAll("nav button").forEach(x=>x.classList.toggle("active",x.dataset.tab===name));if(name==="dashboard")renderDashboard();if(name==="history")renderHistory()}
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
+$("minus").onclick=()=>{qty=Math.max(1,qty-1);$("qty").textContent=qty};
+$("plus").onclick=()=>{qty++;$("qty").textContent=qty};
+$("add").onclick=()=>{const old=cart.find(x=>x.drink===selectedDrink&&x.ice===selectedIce);if(old)old.qty+=qty;else cart.push({drink:selectedDrink,ice:selectedIce,qty});qty=1;$("qty").textContent=qty;renderCart()};
+$("checkout").onclick=()=>{if(!cart.length)return;const sets=cart.reduce((a,x)=>a+x.qty,0);if(!confirm(`${sets}セット、${yen(sets*PRICE)}で販売を確定しますか？`))return;sales.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,7),time:new Date().toISOString(),date:today(),items:cart.map(x=>({...x}))});save();cart=[];renderCart();alert("販売を記録しました！");};
+$("dashDate").value=today();$("historyDate").value=today();$("dashDate").onchange=renderDashboard;$("historyDate").onchange=renderHistory;
+$("export").onclick=()=>{const blob=new Blob([JSON.stringify({version:1,exportedAt:new Date().toISOString(),sales},null,2)],{type:"application/json"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=`販売データ_${today()}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};
+$("import").onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const data=JSON.parse(await f.text());if(!Array.isArray(data.sales))throw new Error();if(confirm(`${data.sales.length}件の記録で現在のデータを置き換えます。よろしいですか？`)){sales=data.sales;save();alert("復元しました");renderDashboard();renderHistory()}}catch(err){alert("バックアップファイルを読み込めませんでした")}e.target.value=""};
+$("clear").onclick=()=>{if(confirm("本当にすべての販売記録を削除しますか？")){if(confirm("削除後は元に戻せません。続けますか？")){sales=[];save();renderDashboard();renderHistory();alert("販売記録を削除しました")}}};
+load();renderChoices();renderCart();
+})();
+</script>
+</body></html>
